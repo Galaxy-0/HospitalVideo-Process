@@ -14,7 +14,7 @@ except ImportError:
     from utils import load_env_config, validate_config
 
 
-def call_openai_api(messages: List[Dict[str, str]], model: str = "gpt-4o") -> Dict[str, Any]:
+def call_openai_api(messages: List[Dict[str, str]], model: str = "deepseek-chat") -> Dict[str, Any]:
     """
     调用OpenAI Chat Completions API
     
@@ -36,6 +36,9 @@ def call_openai_api(messages: List[Dict[str, str]], model: str = "gpt-4o") -> Di
     # 2.2.1: 基础HTTP调用实现
     api_key = config['OPENAI_API_KEY']
     base_url = config['OPENAI_BASE_URL']
+    # 确保URL格式正确，支持DeepSeek和OpenAI
+    if not base_url.endswith('/v1'):
+        base_url = base_url.rstrip('/') + '/v1'
     url = f"{base_url}/chat/completions"
     
     # 构造请求数据
@@ -43,9 +46,12 @@ def call_openai_api(messages: List[Dict[str, str]], model: str = "gpt-4o") -> Di
         "model": model,
         "messages": messages,
         "temperature": 0.1,
-        "max_tokens": 1000,
-        "response_format": {"type": "json_object"}
+        "max_tokens": 1000
     }
+    
+    # 如果是OpenAI API，添加response_format参数
+    if 'openai.com' in base_url:
+        data["response_format"] = {"type": "json_object"}
     
     # 构造HTTP请求
     json_data = json.dumps(data).encode('utf-8')
@@ -86,6 +92,44 @@ def call_openai_api(messages: List[Dict[str, str]], model: str = "gpt-4o") -> Di
         raise Exception(f"API调用失败: {str(e)}")
 
 
+def _extract_json_from_content(content: str) -> Dict[str, Any]:
+    """
+    从内容中提取JSON，处理可能包含其他文字的情况
+    
+    Args:
+        content: 原始内容字符串
+        
+    Returns:
+        Dict[str, Any]: 解析后的JSON对象
+    """
+    import re
+    
+    # 首先尝试直接解析
+    try:
+        return json.loads(content.strip())
+    except json.JSONDecodeError:
+        pass
+    
+    # 尝试提取JSON代码块
+    json_match = re.search(r'```json\s*(\{.*?\})\s*```', content, re.DOTALL)
+    if json_match:
+        try:
+            return json.loads(json_match.group(1))
+        except json.JSONDecodeError:
+            pass
+    
+    # 尝试提取花括号内的内容
+    brace_match = re.search(r'\{.*\}', content, re.DOTALL)
+    if brace_match:
+        try:
+            return json.loads(brace_match.group(0))
+        except json.JSONDecodeError:
+            pass
+    
+    # 如果都失败了，抛出异常
+    raise json.JSONDecodeError(f"无法从内容中提取有效JSON: {content[:200]}...")
+
+
 def _parse_openai_response(response_data: str) -> Dict[str, Any]:
     """
     解析OpenAI API响应
@@ -106,8 +150,8 @@ def _parse_openai_response(response_data: str) -> Dict[str, Any]:
             
         message_content = raw_response['choices'][0]['message']['content']
         
-        # 解析LLM返回的JSON内容
-        evaluation_result = json.loads(message_content)
+        # 提取JSON内容（处理可能包含其他文字的情况）
+        evaluation_result = _extract_json_from_content(message_content)
         
         # 2.2.2b: 输出格式验证
         return _validate_evaluation_result(evaluation_result)

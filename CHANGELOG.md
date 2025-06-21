@@ -52,4 +52,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Development Environment
 - Python 3.13.2 (兼容3.11+)
 - uv包管理器
-- OpenAI GPT-4o模型 
+- DeepSeek Chat模型 (默认) / OpenAI GPT-4o模型
+
+### Changed
+- 🔄 **API兼容性增强**
+  - 默认使用DeepSeek API配置
+  - 增强JSON解析，支持多种响应格式
+  - 自动URL格式处理，兼容不同API端点
+  - 智能response_format参数处理 

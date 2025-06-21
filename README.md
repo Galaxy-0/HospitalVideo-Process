@@ -24,17 +24,36 @@ source .venv/bin/activate  # Linux/Mac
 
 # 配置环境变量
 cp env.example .env
-# 编辑 .env 文件，设置你的 OPENAI_API_KEY
+# 编辑 .env 文件，设置你的 DeepSeek API 密钥
 ```
 
-### 2. 配置检查
+### 2. API配置
+
+系统默认使用DeepSeek API，在 `.env` 文件中配置：
+
+```bash
+# DeepSeek API配置
+OPENAI_API_KEY=sk-your-deepseek-api-key-here
+OPENAI_MODEL=deepseek-chat
+OPENAI_BASE_URL=https://api.deepseek.com
+```
+
+如果要使用OpenAI API，修改为：
+```bash
+# OpenAI API配置
+OPENAI_API_KEY=sk-your-openai-api-key-here
+OPENAI_MODEL=gpt-4o
+OPENAI_BASE_URL=https://api.openai.com/v1
+```
+
+### 3. 配置检查
 
 ```bash
 # 检查配置是否正确
 python src/evaluate.py --config-check
 ```
 
-### 3. 运行评估
+### 4. 运行评估
 
 ```bash
 # 评估示例手术步骤
@@ -112,9 +131,10 @@ HospitalVideo-Process/
 ## ⚙️ 技术实现
 
 - **API调用**: 使用Python标准库`urllib.request`，无第三方依赖
-- **模型**: OpenAI GPT-4o
+- **支持模型**: DeepSeek Chat (默认) / OpenAI GPT-4o
 - **输出格式**: 结构化JSON，包含评分、风险点、建议
 - **错误处理**: 完整的异常处理和配置验证
+- **兼容性**: 支持OpenAI兼容的API接口
 
 ## 🔧 开发说明
 

@@ -16,8 +16,8 @@ def load_env_config() -> Dict[str, str]:
     """
     config = {
         'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
-        'OPENAI_MODEL': os.getenv('OPENAI_MODEL', 'gpt-4o'),
-        'OPENAI_BASE_URL': os.getenv('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+        'OPENAI_MODEL': os.getenv('OPENAI_MODEL', 'deepseek-chat'),
+        'OPENAI_BASE_URL': os.getenv('OPENAI_BASE_URL', 'https://api.deepseek.com'),
         'DEBUG': os.getenv('DEBUG', 'false').lower() == 'true'
     }
     return config
