@@ -14,6 +14,16 @@ def load_env_config() -> Dict[str, str]:
     Returns:
         Dict[str, str]: 配置字典
     """
+    # 尝试加载 .env 文件
+    env_file = '.env'
+    if os.path.exists(env_file):
+        with open(env_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key.strip()] = value.strip()
+    
     config = {
         'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', ''),
         'OPENAI_MODEL': os.getenv('OPENAI_MODEL', 'deepseek-chat'),
